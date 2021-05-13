@@ -1,7 +1,8 @@
 import React, { useEffect, useReducer } from "react";
-import { useForm } from "../../hooks/useForm";
 
 import "./styles.css";
+import { TodoAdd } from "./TodoAdd";
+import { TodoList } from "./TodoList";
 import { todoReducer } from "./todoReducer";
 
 const init = () => {
@@ -18,10 +19,6 @@ const init = () => {
 
 export const TodoApp = () => {
   const [todos, dispatch] = useReducer(todoReducer, [], init);
-
-  const [{ description }, handleInputChanges, reset] = useForm({
-    description: "",
-  });
 
   useEffect(() => {
     localStorage.setItem("todos", JSON.stringify(todos));
@@ -42,27 +39,12 @@ export const TodoApp = () => {
       payload: todoId,
     });
   };
-  const handleSubmit = (e) => {
-    e.preventDefault();
 
-    // Block empty content from uploading.
-    if (description.trim().length <= 1) {
-      return;
-    }
-
-    const newTodo = {
-      id: new Date().getTime(),
-      desc: description,
-      done: false,
-    };
-
-    const action = {
+  const handleAddTodo = (newTodo) => {
+    dispatch({
       type: "add",
       payload: newTodo,
-    };
-
-    dispatch(action);
-    reset();
+    });
   };
 
   return (
@@ -72,44 +54,15 @@ export const TodoApp = () => {
 
       <div className="row">
         <div className="col-7">
-          <ul className="list-group list-group-flush">
-            {todos.map((todo, i) => (
-              <li key={todo.id} className="list-group-item">
-                <p
-                  className={`${todo.done && "complete"}`}
-                  onClick={() => handleToggle(todo.id)}
-                >
-                  {i + 1}. {todo.desc}
-                </p>
-                <button
-                  onClick={() => handleDelete(todo.id)}
-                  className="btn btn-danger"
-                >
-                  Delete
-                </button>
-              </li>
-            ))}
-          </ul>
+          <TodoList
+            todos={todos}
+            handleDelete={handleDelete}
+            handleToggle={handleToggle}
+          />
         </div>
 
         <div className="col-5">
-          <h4>Add TODO</h4>
-
-          <form onSubmit={handleSubmit}>
-            <input
-              type="text"
-              name="description"
-              className="form-control"
-              placeholder="Learn..."
-              autoComplete="off"
-              value={description}
-              onChange={handleInputChanges}
-            />
-
-            <button className="btn btn-outline-primary mt-1 btn-block">
-              Add
-            </button>
-          </form>
+          <TodoAdd handleAddTodo={handleAddTodo} />
         </div>
       </div>
     </div>
